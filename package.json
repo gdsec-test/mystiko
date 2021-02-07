@@ -1,0 +1,30 @@
+{
+  "name": "mystiko",
+  "version": "0.0.2",
+  "description": "",
+  "main": "src/index.js",
+  "type": "module",
+  "bin": {
+    "mystiko": "src/index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ogomozov-godaddy/mystiko.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ogomozov-godaddy/mystiko/issues"
+  },
+  "homepage": "https://github.com/ogomozov-godaddy/mystiko#readme",
+  "dependencies": {
+    "aws-sdk": "^2.838.0",
+    "chalk": "^4.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^7.19.0"
+  }
+}
