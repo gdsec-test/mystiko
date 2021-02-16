@@ -1,8 +1,8 @@
-import chalk from 'chalk';
+const chalk = require('chalk');
 
 const prefix = 'MYSTIKO:';
 
-export default {
+module.exports = {
   log: text => {
     console.log(chalk.green(prefix + text));
   },

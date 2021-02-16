@@ -1,12 +1,10 @@
-#!/usr/bin/env node
+const AWS = require('aws-sdk');
+const logger = require('./logger.js');
+const fs = require('fs');
 
-import AWS from 'aws-sdk';
-import logger from './logger.js';
-import fs from 'fs';
-import { execSync } from 'child_process';
-
-(function () {
+module.exports = async function () {
   var data = fs.readFileSync('.mystiko', 'utf8');
+  const requests = [];
   data.split('\n').forEach(s => {
     if (!s) {
       return;
@@ -20,33 +18,33 @@ import { execSync } from 'child_process';
     }
     const destName = params[0];
     const secretName = params[1];
-    console.log(destName);
-    
-    readValue(secretName)
-      .then(secret => {
-        if (secret) {
-          
-          if (destName.startsWith('file:')) {
-            let filePath = destName.split(':')[1];
-            logger.log(`Saving ${secretName} into file ${filePath}`);
-            filePath = filePath.split('/');
-            if (filePath.length > 1) {
-              const dirPath = filePath.slice(0, filePath.length - 1);
-              fs.mkdirSync(dirPath.join('/'), { recursive: true });
+    requests.push(
+      readValue(secretName)
+        .then(secretVal => {
+          if (secretVal) {
+            const secret = Object.values(JSON.parse(secretVal))[0];
+            if (destName.startsWith('file:')) {
+              let filePath = destName.split(':')[1];
+              logger.log(`Saving ${secretName} into file ${filePath}`);
+              filePath = filePath.split('/');
+              if (filePath.length > 1) {
+                const dirPath = filePath.slice(0, filePath.length - 1);
+                fs.mkdirSync(dirPath.join('/'), { recursive: true });
+              }
+              fs.writeFileSync(destName.split(':')[1], secret);
+            } else {
+              logger.log(`Saving ${secretName} into environment variable ${destName}`);
+              process.env[destName] = secret;
             }
-            fs.writeFileSync(destName.split(':')[1], secret);
-          } else {
-            logger.log(`Saving ${secretName} into environment variable ${destName}`);
           }
-        }
-      })
-      .catch(err => {
-        logger.error(err);
-      });
-
-    // const stdout = execSync('ls');
+        })
+        .catch(err => {
+          logger.error(err);
+        })
+    );
   });
-})();
+  return await Promise.all(requests);
+}
 
 async function readValue (secretName) {
   const region = 'us-west-2';
