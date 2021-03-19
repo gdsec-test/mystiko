@@ -1,6 +1,6 @@
 const path = require('path');
 const mystiko = require('mystiko');
-mystiko();
+mystiko({ env: 'webpack'});
 
 module.exports = {
   entry: './index.js',

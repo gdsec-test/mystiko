@@ -1,6 +1,6 @@
 {
   "name": "mystiko",
-  "version": "0.0.2",
+  "version": "0.2.0",
   "description": "",
   "main": "src/index.js",
   "scripts": {
@@ -8,16 +8,20 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ogomozov-godaddy/mystiko.git"
+    "url": "git+https://github.com/gdcorp-infosec/mystiko.git"
   },
-  "author": "",
-  "license": "ISC",
+  "maintainers": [],
+  "author": "GoDaddy Operating Company, LLC",
+  "license": "UNLICENSED",
   "bugs": {
-    "url": "https://github.com/ogomozov-godaddy/mystiko/issues"
+    "url": "https://github.com/gdcorp-infosec/mystiko/issues"
   },
-  "homepage": "https://github.com/ogomozov-godaddy/mystiko#readme",
+  "publishConfig": {
+    "registry": "https://artifactory.secureserver.net/artifactory/api/npm/node-wsb-local/"
+  },
+  "homepage": "https://github.com/gdcorp-infosec/mystiko#readme",
   "dependencies": {
-    "aws-sdk": "^2.838.0",
+    "@aws-sdk/client-secrets-manager": "^3.8.0",
     "chalk": "^4.1.0"
   },
   "devDependencies": {

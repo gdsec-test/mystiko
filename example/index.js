@@ -3,7 +3,7 @@ import express from 'express';
 import mystiko from 'mystiko';
 
 (async () => {
-  await mystiko();
+  await mystiko({ env: 'dev'});
 
   const app = express();
   const port = 3000;

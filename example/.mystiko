@@ -1,3 +1,0 @@
-NPM_CREDS=npmrc_creds
-file:./cert/fld/cert.crt=ssl_cert
-asdf

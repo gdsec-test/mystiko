@@ -13,7 +13,8 @@
   "license": "ISC",
   "dependencies": {
     "@babel/polyfill": "^7.12.1",
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "mystiko": "file:../"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",
