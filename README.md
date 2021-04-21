@@ -4,7 +4,7 @@ Allows to store all secrets in AWS Secrets Manager and read them locally in diff
 
 ## Usage
 
-Create file `.mystiko.json` with below syntax. See `example` folder
+1. Create file `.mystiko.json` in folder where you run it with below syntax. See `example` folder
 
 ```json
 {
@@ -15,7 +15,7 @@ Create file `.mystiko.json` with below syntax. See `example` folder
         { 
           "name": "<secret_name_in_AWS_Secret_Manager>",
           "target": "<env or file>",
-          "targetValue": "<name or path of target to put secret value>"
+          "targetValue": "<name of env variable or path of target file to put secret value to>"
         },
         {
           "name": "<secret_name_in_AWS_Secret_Manager>",
@@ -23,7 +23,7 @@ Create file `.mystiko.json` with below syntax. See `example` folder
             { 
               "key": "<key in AWS Secret>",
               "target": "<env or file>",
-              "targetValue": "<name or path of target to put secret value>"
+              "targetValue": "<name of env variable or path of target file to put secret value to>"
             }
           ]
         }
@@ -32,6 +32,20 @@ Create file `.mystiko.json` with below syntax. See `example` folder
   }
 }
 ```
+
+2. Call mystiko anywhere you want to dd your secrets
+
+Remember, `mystiko` is async Promisify library, so to make sure you receive your secrets before usage, you have to wait for it
+`mystiko` uses standard AWS auth process [see Configuration settings and precedence ](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html) to access Secrets Manager
+
+```javascript
+import mystiko from 'mystiko';
+......
+await mystiko({ env: 'dev'});
+```
+
+3. Use your Secret
+Secret will appear as env var, so you can read it from `process.env.<name of secret>`. Or it will be saved in file
 
 ## Tests
 
