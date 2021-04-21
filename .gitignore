@@ -2,3 +2,5 @@ node_modules
 .vscode/*
 dist
 cert
+test_gen_files/*
+.nyc_output/

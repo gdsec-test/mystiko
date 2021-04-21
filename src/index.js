@@ -3,54 +3,66 @@ const logger = require('./logger.js');
 const fs = require('fs');
 const TARGETS = [ 'file', 'env' ];
 
-module.exports = async function ({ env }) {
-  var data = fs.readFileSync('.mystiko.json', 'utf8');
-  var config;
-  try {
-    data = JSON.parse(data);
-    config = data.environments[env];
-  } catch (err) {
-    logger.error('Unable to parse .mystiko.json\n' + err.toString());
-  }
+module.exports = async function ({ env, configFile = '.mystiko.json' }) {
+  const config = readConfigFile(env, configFile)
   const { region, secrets = []} = config;
   const requests = [];
   secrets.forEach(secretConfig => {
-    const { name, target, targetValue } = secretConfig;
-    if (TARGETS.indexOf(target) < 0) {
-      logger.warn(`Secret ${name} is not processed, cause it's target ${target} is not supported. Supported:${
-        TARGETS.join(',')}`);
-      return;
+    const { name, target } = secretConfig;
+    if ((TARGETS.indexOf(target) < 0) && target) {
+      errorMsg = `Secret ${name} is not processed, because it's target ${target} is not supported. Supported:${TARGETS.join(',')}`;
+      throw new Error(errorMsg);
     }
     const secretName = name;
     requests.push(
       readValue(secretName, region)
-        .then(secretVal => {
-          if (secretVal) {
-            const secret = Object.values(JSON.parse(secretVal))[0];
-            if (target === TARGETS[0]) { // it is file
-              let filePath = targetValue;
-              logger.log(`Saving ${secretName} into file ${filePath}`);
-              filePath = filePath.split('/');
-              if (filePath.length > 1) {
-                const dirPath = filePath.slice(0, filePath.length - 1);
-                fs.mkdirSync(dirPath.join('/'), { recursive: true });
-              }
-              fs.writeFileSync(targetValue, secret);
-            } else {
-              logger.log(`Saving ${secretName} into environment variable ${targetValue}`);
-              process.env[targetValue] = secret;
-            }
+        .then(secretValue => {
+          if (secretValue) {
+            processSecrets(secretValue, secretConfig);
           }
-        })
-        .catch(err => {
-          logger.error(err);
         })
     );
   });
   return await Promise.all(requests);
 }
 
-async function readValue (secretName, region) {
+function processSecrets(secretValue, secretConfig) {
+  if ('keyValues' in secretConfig) {
+    secrets = secretConfig['keyValues'];
+    secretValue = safelyParseSecretString(secretValue);
+    for (const secret of secrets) {
+      if (!(secret.key in secretValue)) {
+        errorMsg = `${secret.key} is not a key in the ASM secret ${secretConfig.name}`;
+        throw new Error(errorMsg);
+      }
+      processSecret(secret.key, secretValue[secret.key], secret.target, secret.targetValue);
+    }
+  } else {
+    processSecret(secretConfig.name, secretValue, secretConfig.target, secretConfig.targetValue);
+  }
+}
+
+function processSecret(secretName, secretValue, target, targetValue) {
+  if (target === 'file') {
+    let filePath = targetValue;
+    logger.log(`Saving ${secretName} into file ${filePath}`);
+    filePath = filePath.split('/');
+    if (filePath.length > 1) {
+      const dirPath = filePath.slice(0, filePath.length - 1);
+      fs.mkdirSync(dirPath.join('/'), { recursive: true });
+    }
+    fs.writeFileSync(targetValue, secretValue);
+  } else if (target === 'env') {
+    logger.log(`Saving ${secretName} into environment variable ${targetValue} with value ${secretValue}`);
+    process.env[targetValue] = secretValue;
+  } else {
+    errorMsg = `No logic to support target ${target} for ${secretName}`;
+    logger.error(errorMsg);
+    throw new Error(errorMsg);
+  }
+}
+
+async function getSecretFromSecretManager(secretName, region) {
   var client = new SecretsManagerClient({
     region: region
   });
@@ -65,6 +77,11 @@ async function readValue (secretName, region) {
       }
     );
   });
+  return err, data;
+}
+
+async function readValue(secretName, region) {
+  [err, data] = await getSecretFromSecretManager(secretName, region);
 
   if (err) {
     if (err.name === 'DecryptionFailureException') {
@@ -84,15 +101,40 @@ async function readValue (secretName, region) {
     } else if (err.name === 'ExpiredTokenException') {
       logger.error('Your credentials expired. Please, re-login\n' + err.toString());
     } else {
-      logger.error('Unknow error:' + err.name + '\n' + err.toString());
+      logger.error('Unknown error:' + err.name + '\n' + err.toString());
     }
+    throw err;
   } else {
-    // Depending on whether the secret is a string or binary, one of these fields will be populated.
-    if ('SecretString' in data) {
-      return data.SecretString;
-    } else {
-      const buff = new Buffer(data.SecretBinary, 'base64');
-      return buff.toString('ascii');
-    }
+    return parseSecret(data);
+  }
+}
+
+function parseSecret (data) {
+  // Depending on whether the secret is a string or binary, one of these fields will be populated.
+  if ('SecretString' in data) {
+    return safelyParseSecretString(data.SecretString);
+  } else {
+    const buff = Buffer.from(data.SecretBinary, 'base64');
+    return buff.toString('ascii');
+  }
+}
+
+function readConfigFile (env, configFile) {
+  var data = fs.readFileSync(configFile, 'utf8');
+  var config;
+  try {
+    data = JSON.parse(data);
+    config = data.environments[env];
+    return config;
+  } catch (err) {
+    throw new Error(`Unable to parse ${configFile}\n` + err.toString());
+  }
+}
+
+function safelyParseSecretString (string) {
+  try {
+    return JSON.parse(string);
+  } catch (err) { // Plain text secret
+    return string;
   }
 }
