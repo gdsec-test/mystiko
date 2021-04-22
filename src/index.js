@@ -94,9 +94,7 @@ async function getSecretFromSecretManager(secretName, region) {
 }
 
 async function readValue(secretName, region) {
-  const response = await getSecretFromSecretManager(secretName, region);
-  const err = response[0];
-  const data = response[1];
+  const [err, data] = await getSecretFromSecretManager(secretName, region);
 
   if (err) {
     if (err.name === 'DecryptionFailureException') {
