@@ -90,11 +90,11 @@ async function getSecretFromSecretManager(secretName, region) {
       }
     );
   });
-  return err, data;
+  return [err, data];
 }
 
 async function readValue(secretName, region) {
-  [err, data] = await getSecretFromSecretManager(secretName, region);
+  const [err, data] = await getSecretFromSecretManager(secretName, region);
 
   if (err) {
     if (err.name === 'DecryptionFailureException') {
