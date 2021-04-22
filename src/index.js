@@ -26,6 +26,19 @@ module.exports = async function ({ env, configFile = '.mystiko.json' }) {
   return await Promise.all(requests);
 }
 
+function getTargetValue(secretConfig = {}) {
+  const { target } = secretConfig;
+  if (target === 'file') {
+    return secretConfig.filename;
+  } else if (target === 'env') {
+    return secretConfig.envname;
+  } else {
+    errorMsg = `Unknown type of target: ${target} in ${JSON.stringify(secretConfig)}`;
+    logger.error(errorMsg);
+    throw new Error(errorMsg);
+  }
+}
+
 function processSecrets(secretValue, secretConfig) {
   if ('keyValues' in secretConfig) {
     secrets = secretConfig['keyValues'];
@@ -35,10 +48,10 @@ function processSecrets(secretValue, secretConfig) {
         errorMsg = `${secret.key} is not a key in the ASM secret ${secretConfig.name}`;
         throw new Error(errorMsg);
       }
-      processSecret(secret.key, secretValue[secret.key], secret.target, secret.targetValue);
+      processSecret(secret.key, secretValue[secret.key], secret.target, getTargetValue(secret));
     }
   } else {
-    processSecret(secretConfig.name, secretValue, secretConfig.target, secretConfig.targetValue);
+    processSecret(secretConfig.name, secretValue, secretConfig.target, getTargetValue(secretConfig));
   }
 }
 

@@ -16,7 +16,7 @@ describe('Process Secret', function() {
   });
 
   it('should be able to set a plain text secret as an environment variable', function() {
-    const secretConfig = { "name": "ASM_SECRET_NAME2", "target": "env", "targetValue": "PLAIN_TEXT_SECRET" };
+    const secretConfig = { "name": "ASM_SECRET_NAME2", "target": "env", "envname": "PLAIN_TEXT_SECRET" };
     const secretValue = 'secret value';
     processSecrets(secretValue, secretConfig);
     expect(process.env.PLAIN_TEXT_SECRET).toBe(secretValue);
@@ -27,8 +27,8 @@ describe('Process Secret', function() {
     const secretConfig = {
       "name": "KEY_VALUE_SECRET1",
       "keyValues": [
-        { "key": "SECRET_KEY1", "target": "env", "targetValue": "SECRET_KEY1_ENV" },
-        { "key": "SECRET_KEY2", "target": "env", "targetValue": "SECRET_KEY2_ENV" }
+        { "key": "SECRET_KEY1", "target": "env", "envname": "SECRET_KEY1_ENV" },
+        { "key": "SECRET_KEY2", "target": "env", "envname": "SECRET_KEY2_ENV" }
       ]
     }
     processSecrets(secretValue, secretConfig);
@@ -41,7 +41,7 @@ describe('Process Secret', function() {
     const secretConfig = {
       "name": "KEY_VALUE_SECRET1",
       "keyValues": [
-        { "key": "SECRET_KEY1", "target": "file", "targetValue": TEST_FILE_SECRET },
+        { "key": "SECRET_KEY1", "target": "file", "filename": TEST_FILE_SECRET },
       ]
     }
     processSecrets(secretValue, secretConfig);

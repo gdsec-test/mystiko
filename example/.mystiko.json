@@ -1,15 +1,15 @@
 {
   "environments": {
     "dev": {
-      "region": "us-west-2",
+      "region": "me-south-1",
       "secrets": [
-        { "name": "npmrc_creds", "target": "env", "targetValue": "NPM_CREDS"}
+        { "name": "npmrc_creds", "target": "env", "envname": "SOME_CREDS"}
       ]
     },
     "webpack": {
-      "region": "us-west-2",
+      "region": "me-south-1",
       "secrets": [
-        { "name": "ssl_cert", "target": "file", "targetValue": "./cert/fld/cert.crt"}
+        { "name": "ssl_cert", "target": "file", "filename": "./cert/fld/cert.crt"}
       ]
     }
   }

@@ -10,20 +10,20 @@ Allows to store all secrets in AWS Secrets Manager and read them locally in diff
 {
   "environments": {
     "<any_env_name>": {
-      "region": "<AWS Region,e.g. us-west-2>",
+      "region": "<AWS Region,e.g. me-south-1>",
       "secrets": [
         { 
           "name": "<secret_name_in_AWS_Secret_Manager>",
-          "target": "<env or file>",
-          "targetValue": "<name of env variable or path of target file to put secret value to>"
+          "target": "env",
+          "envname": "<name of env variable to put secret value to>"
         },
         {
           "name": "<secret_name_in_AWS_Secret_Manager>",
           "keyValues": [
             { 
               "key": "<key in AWS Secret>",
-              "target": "<env or file>",
-              "targetValue": "<name of env variable or path of target file to put secret value to>"
+              "target": "file",
+              "filename": "<relative or absolute path of target file to put secret value to>"
             }
           ]
         }
